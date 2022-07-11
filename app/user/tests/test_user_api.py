@@ -28,14 +28,14 @@ class PublicUserApi(TestCase):
      """The public features of the user API"""
 
      def setUp(self):
-          self.client =APIClient()
+          self.client = APIClient()
 
      def test_create_user_success(self):
         """Test creating a user is successful"""
         payload = {
             'email': 'test@example.com',
             'password': 'testpass123',
-            'name': 'Test Name',
+            'name': 'Test name',
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
@@ -47,10 +47,10 @@ class PublicUserApi(TestCase):
 
      def test_user_with_email_exist_error(self):
         """Test error returned if user with email exit"""
-        payload={
+        payload = {
             'email': 'test@example.com',
             'password': 'testpass123',
-            'name': 'Test Name',
+            'name': 'Test name',
         }
         create_user(**payload)
         res = self.client.post(CREATE_USER_URL, payload)
@@ -63,7 +63,7 @@ class PublicUserApi(TestCase):
         payload = {
             'email': 'test@example.com',
             'password': 'pw',
-            'name': 'Test Name',
+            'name': 'Test name',
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
@@ -76,7 +76,7 @@ class PublicUserApi(TestCase):
      def test_create_token_for_user(self):
         """Test generates token for valid credentials."""
         user_details = {
-            'name': 'Test Name',
+            'name': 'Test name',
             'email':'test@example.com',
             'password': 'test-user-password123',
         }
@@ -121,7 +121,7 @@ class PrivateUserApiTests(TestCase):
         self.user = create_user(
             email='test@example.com',
             password='testpass123',
-            name='Test Name',
+            name='Test name',
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
