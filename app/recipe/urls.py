@@ -14,7 +14,7 @@ from recipe import views
 
 
 router = DefaultRouter()
-router.register('recipes',views.RecipeViewset)
+router.register('recipes',views.RecipeViewSet)
 
 app_name = 'recipe'
 
