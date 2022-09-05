@@ -16,7 +16,7 @@ from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.test import APIClient
-from yaml import serialize
+
 
 
 from core.models import (
@@ -45,7 +45,7 @@ def image_upload_url(recipe_id):
 
 def create_recipe(user, **params):
     """create and return sample recipe"""
-    defaults= {
+    defaults = {
         'title':'Sample recipe title',
         'time_minutes': 22,
         'price':Decimal('5.25'),
@@ -128,7 +128,7 @@ class PrivateRecipeApiTest(TestCase):
         payload = {
             'title': 'Sample recipe',
             'time_minutes': 30,
-            'price': Decimal('5.99'),
+            'price': Decimal ('5.99'),
         
         }
         res =self.client.post(RECIPES_URL, payload)
@@ -175,7 +175,7 @@ class PrivateRecipeApiTest(TestCase):
                 'link': 'https://example.com/new-recipe.pdf',
                 'description': 'New recipe description',
                 'time_minutes': 10,
-                'price': Decimal('2.50'),
+                'price': Decimal ('2.50'),
             }
             url = detail_url(recipe.id)
             res = self.client.put(url, payload)
@@ -229,7 +229,7 @@ class PrivateRecipeApiTest(TestCase):
         payload = {
             'title': 'Thai Prawn Curry',
             'time_minutes': 30,
-            'price': Decimal('2.50'),
+            'price': Decimal ('2.50'),
             'tags': [{'name': 'Thai'}, {'name': 'Dinner'}],
         }
         res = self.client.post(RECIPES_URL, payload, format='json')
@@ -252,7 +252,7 @@ class PrivateRecipeApiTest(TestCase):
         payload = {
             'title': 'Pongal',
             'time_minutes': 60,
-            'price': Decimal('4.50'),
+            'price': Decimal ('4.50'),
             'tags': [{'name': 'Indian'}, {'name': 'Breakfast'}],
         }
         res = self.client.post(RECIPES_URL, payload, format='json')
@@ -317,7 +317,7 @@ class PrivateRecipeApiTest(TestCase):
         payload = {
             'title': 'Cauliflower Tacos',
             'time_minutes': 60,
-            'price': Decimal('4.30'),
+            'price': Decimal ('4.30'),
             'ingredients': [{'name': 'Cauliflower'}, {'name': 'Salt'}],
         }
         res = self.client.post(RECIPES_URL, payload, format='json')
@@ -399,6 +399,48 @@ class PrivateRecipeApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.ingredients.count(), 0)
     
+    def test_filter_by_tags(self):
+        """Test filtering recipes by tags."""
+        r1 = create_recipe(user=self.user, title='Thai Vegetable Curry')
+        r2 = create_recipe(user=self.user, title='Aubergine with Tahini')
+        tag1 = Tag.objects.create(user=self.user, name='Vegan')
+        tag2 = Tag.objects.create(user=self.user, name='Vegetarian')
+        r1.tags.add(tag1)
+        r2.tags.add(tag2)
+        r3 = create_recipe(user=self.user, title='Fish and chips')
+
+        params = {'tags': f'{tag1.id},{tag2.id}'}
+        res = self.client.get(RECIPES_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_by_ingredients(self):
+        """Test filtering recipes by ingredients."""
+        r1 = create_recipe(user=self.user, title='Posh Beans on Toast')
+        r2 = create_recipe(user=self.user, title='Chicken Cacciatore')
+        in1 = Ingredient.objects.create(user=self.user, name='Feta Cheese')
+        in2 = Ingredient.objects.create(user=self.user, name='Chicken')
+        r1.ingredients.add(in1)
+        r2.ingredients.add(in2)
+        r3 = create_recipe(user=self.user, title='Red Lentil Daal')
+
+        params = {'ingredients': f'{in1.id},{in2.id}'}
+        res = self.client.get(RECIPES_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+    
+
+
 
 class ImageUploadTests(TestCase):
     """Tests for the image upload API."""
